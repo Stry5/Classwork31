@@ -28,14 +28,6 @@ namespace Dates {
         int month;
         int day;
         bool isLeapYear;
-        void addDayLimit(const int& day, const int& limit) {
-            addMonth(1);
-            setDay(day - (limit - this->day));
-        }
-        void subDayLimit(const int& day, const int& limit) {
-            subMonth(1);
-            setDay(limit - (day - this->day));
-        }
         int daysInMonth(const int& month){
             int days[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
             if (month == 2 && (isLeapYear == true)) {
@@ -44,8 +36,14 @@ namespace Dates {
             return days[month - 1];
         }
         bool checkLeapYear(const int& year) {
-            return ((year % 4 == 0) || ((year % 400 == 0) && (year % 100 == 0)));
+            if ((year % 4 == 0) || ((year % 400 == 0) && (year % 100 == 0))) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
+
     public:
         Date(int year, int month, int day) {
             if (year < 0) {
@@ -69,56 +67,54 @@ namespace Dates {
             isLeapYear = checkLeapYear(year);
         }
 
-        // pass by value b/c allows for both passing a variable or a value itself
 
-        void addYear(const int& year) {
-            this->year += year;
-            isLeapYear = checkLeapYear(year);
+        void addYears(const int& years) {
+            this->year += years;
+            isLeapYear = checkLeapYear(this->year);
 
         }
-        void subYear(const int& year) {
+        void subYears(const int& years) {
             if (this->year > 0) {
-                this->year -= year;
-                isLeapYear = checkLeapYear(year);
+                this->year -= years;
+                isLeapYear = checkLeapYear(this->year);
             }
             else {
                 throw std::invalid_argument("!! Year cannot be negative !! ");
             }
         }
 
-        void addMonth(int month){
+        void addMonths(int months){
             while (this->month + month > 12){
-                addYear(1);
+                addYears(1);
                 month -= 12;
             }
             setMonth(this->month + month);
 
         }
-        void subMonth(int month){
-            while (this->month - month < 1) {
-                subYear(1);
-                month -= 12;
+        void subMonths(int months){
+            while (this->month - months < 1) {
+                subYears(1);
+                months -= 12;
             }
-            setMonth(this->month - month);
+            setMonth(this->month - months);
         }
 
         void addDays(int days) {
             while((this->day+days) > daysInMonth(this->month)){
                 std::cout << days << std::endl;
                 days -= daysInMonth(this->month);
-                addMonth(1);
+                addMonths(1);
             }
-            setDay(this->day+days);
+            setDay(this->day + days);
         };
         void subDays(int days) {
-            while (days > daysInMonth(this->day)) {
+
+            while ((this->day - days) < 1) {
                 days -= daysInMonth(this->month);
-
-                std::cout << "this->day: " << this->day << std::endl;
-                std::cout << "days: "<< days << std::endl;
-                std::cout << "days in month: " << daysInMonth(this->month) << std::endl << std::endl;
-                subMonth(1);
-
+                subMonths(1);
+            }
+            if ((days * -1) == daysInMonth(this->month)) {
+                setDay(0);
             }
             setDay(this->day - days);
         };
@@ -154,19 +150,66 @@ namespace Times {
         int hour;
         int min;
         int sec;
+
     public:
+        Time(int hour, int min, int sec) {
+            setHour(hour);
+            setMin(min);
+            setSec(sec);
+        }
+
+        void addHours(int hours) {
+            while ((this->hour + hours) > 23) {
+                hours -= 24;
+            }
+            setHour(this->hour + hours);
+        }
+        void subHours(int hours) {
+            while ((this->hour - hours) < 0) {
+                hours -= 24;
+            }
+            setHour(this->hour - hours);
+        }
+
+        void addMins(int mins){
+            while (this->min + mins > 59) {
+                mins -= 60;
+                addHours(1);
+            }
+            setMin(this->min + mins);
+        }
+        void subMins(int mins){
+            while (this->min - mins < 0) {
+                mins -= 60;
+                subHours(1);
+            }
+            setMin(this->min - mins);
+        }
+
+        void addSecs(int secs){
+            while ((this->sec + secs) > 60) {
+                secs -= 60;
+                addMins(1);
+            }
+            setSec(this->sec + secs);
+        }
+        void subSecs(int secs) {
+            while ((this->sec - secs) < 0) {
+                secs -= 60;
+                subMins(1);
+            }
+            setSec(this->sec - secs);
+        }
 
         // getters and setters
-        Time(int hour, int min, int sec) {
 
-        }
-        void setHour(int& hour) {
+        void setHour(const int& hour) {
             this->hour = hour;
         }
-        void setMin(int& min) {
+        void setMin(const int& min) {
             this->min = min;
         }
-        void setSec(int& sec) {
+        void setSec(const int& sec) {
             this->sec = sec;
         }
 
@@ -188,17 +231,32 @@ class DateTime : public Dates::Date, public Times::Time{
 private:
 
 public:
-    void getDateTime() {
-        return;
-    };
+    void difference(DateTime d1, DateTime d2) {
+        int numYears, numMonths, numDays, numHours, numMins, numSecs;
+        numYears = d1.getYear() - d2.getYear();
+        if (numYears < 0) {
+            numYears *= -1;
+        }
+        for (int i = 0; i < numYears; i++) {
+            numDays += 365;
+        }
+
+    }
 };
 
 
 int main()
 {
+    /*
     Dates::Date d1(2024,1,1);
     d1.subDays(9999);
     std::cout  << "month: " << d1.getMonth() << " day: " << d1.getDay() << " year: " << d1.getYear();
+
+    */
+    Times::Time t1(24, 00, 00);
+    t1.subSecs(1);
+    std::cout << "hours: " << t1.getHour() << " mins: " << t1.getMin() << " sec: " << t1.getSec();
+
 
     return 0;
 }
