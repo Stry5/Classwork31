@@ -28,9 +28,11 @@ namespace Dates {
         int month;
         int day;
         bool isLeapYear;
-        int daysInMonth(const int& month){
+    protected:
+      
+        int daysInMonth(const int& month, const int& year){
             int days[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
-            if (month == 2 && (isLeapYear == true)) {
+            if ((month == 2) && (checkLeapYear(year) == true)) {
                 return 29;
             }
             return days[month - 1];
@@ -66,6 +68,7 @@ namespace Dates {
             }
             isLeapYear = checkLeapYear(year);
         }
+        Date() {}
 
 
         void addYears(const int& years) {
@@ -100,9 +103,9 @@ namespace Dates {
         }
 
         void addDays(int days) {
-            while((this->day+days) > daysInMonth(this->month)){
+            while((this->day + days) > daysInMonth(this->month,this->year)){
                 std::cout << days << std::endl;
-                days -= daysInMonth(this->month);
+                days -= daysInMonth(this->month,this->year);
                 addMonths(1);
             }
             setDay(this->day + days);
@@ -110,10 +113,10 @@ namespace Dates {
         void subDays(int days) {
 
             while ((this->day - days) < 1) {
-                days -= daysInMonth(this->month);
+                days -= daysInMonth(this->month,this->year);
                 subMonths(1);
             }
-            if ((days * -1) == daysInMonth(this->month)) {
+            if ((days * -1) == daysInMonth(this->month,this->year)) {
                 setDay(0);
             }
             setDay(this->day - days);
@@ -150,6 +153,51 @@ namespace Times {
         int hour;
         int min;
         int sec;
+    protected:
+        int addH(int hours) {
+            while ((this->hour + hours) > 23) {
+                hours -= 24;
+            }
+            return(this->hour + hours);
+        }
+        int subH(int hours) {
+            while ((this->hour - hours) < 0) {
+                hours -= 24;
+            }
+            return(this->hour - hours);
+        }
+
+        int addM(int mins) {
+            while (this->min + mins > 59) {
+                mins -= 60;
+                addHours(1);
+            }
+            return(this->min + mins);
+        }
+        int subM(int mins) {
+            while (this->min - mins < 0) {
+                mins -= 60;
+                subH(1);
+            }
+            return(this->min - mins);
+        }
+
+        int addS(int secs) {
+            while ((this->sec + secs) > 60) {
+                secs -= 60;
+                addMins(1);
+            }
+            return(this->sec + secs);
+        }
+        int subS(int secs) {
+            while ((this->sec - secs) < 0) {
+                secs -= 60;
+                subMins(1);
+            }
+            return(this->sec - secs);
+        }
+
+
 
     public:
         Time(int hour, int min, int sec) {
@@ -157,48 +205,28 @@ namespace Times {
             setMin(min);
             setSec(sec);
         }
+        Time(){}
 
         void addHours(int hours) {
-            while ((this->hour + hours) > 23) {
-                hours -= 24;
-            }
-            setHour(this->hour + hours);
+            this->hour = addH(hours);
         }
         void subHours(int hours) {
-            while ((this->hour - hours) < 0) {
-                hours -= 24;
-            }
-            setHour(this->hour - hours);
+            this->hour = subH(hours);
         }
 
+
         void addMins(int mins){
-            while (this->min + mins > 59) {
-                mins -= 60;
-                addHours(1);
-            }
-            setMin(this->min + mins);
+            this->min = addM(mins);
         }
         void subMins(int mins){
-            while (this->min - mins < 0) {
-                mins -= 60;
-                subHours(1);
-            }
-            setMin(this->min - mins);
+            this->min = subM(mins);
         }
 
         void addSecs(int secs){
-            while ((this->sec + secs) > 60) {
-                secs -= 60;
-                addMins(1);
-            }
-            setSec(this->sec + secs);
+            this->sec = addS(secs);
         }
         void subSecs(int secs) {
-            while ((this->sec - secs) < 0) {
-                secs -= 60;
-                subMins(1);
-            }
-            setSec(this->sec - secs);
+            this->sec = subS(secs);
         }
 
         // getters and setters
@@ -231,16 +259,52 @@ class DateTime : public Dates::Date, public Times::Time{
 private:
 
 public:
-    void difference(DateTime d1, DateTime d2) {
-        int numYears, numMonths, numDays, numHours, numMins, numSecs;
-        numYears = d1.getYear() - d2.getYear();
-        if (numYears < 0) {
-            numYears *= -1;
-        }
-        for (int i = 0; i < numYears; i++) {
-            numDays += 365;
+
+    DateTime(const int& year, const int& month, const int& day, const int& hour, const int& min, const int& sec)  {
+        setYear(year);
+        setMonth(month);
+        setDay(day);
+        setHour(hour);
+        setMin(min);
+        setSec(sec);
+    }
+
+    void difference(DateTime& startDate, DateTime& endDate) {
+        int numDays = 0, numHours, numMins, numSecs;
+        
+        for (int i = startDate.getMonth(); i <= 12; i++) {
+            numDays += daysInMonth(i, startDate.getYear());
         }
 
+        for (int currentYear = startDate.getYear() + 1; currentYear < endDate.getYear(); currentYear++) {
+            numDays += 365;
+            if (checkLeapYear(currentYear)) {
+                numDays += 1;
+            }
+        }
+
+
+        for (int i = 1; i < endDate.getMonth(); i++) {
+            numDays += daysInMonth(i, endDate.getYear());
+        }
+
+        // account for days not counted in the start month and end month
+        numDays -= startDate.getDay();
+        numDays += endDate.getDay();
+        numHours = startDate.getHour() - endDate.getHour();
+        numMins = startDate.getMin() - endDate.getMin();
+        numSecs = startDate.getSec() - endDate.getSec();
+        if (numMins < 0) {
+            numMins *= -1;
+        }
+        if (numSecs < 0) {
+            numSecs *= -1;
+        }
+        if (numHours < 0) {
+            numHours *= -1;
+        }
+        std::cout << "the difference is " << numDays << " days, " << numHours << " hours, " 
+        << numMins << " minutes, and " << numSecs << " seconds.";
     }
 };
 
@@ -251,12 +315,17 @@ int main()
     Dates::Date d1(2024,1,1);
     d1.subDays(9999);
     std::cout  << "month: " << d1.getMonth() << " day: " << d1.getDay() << " year: " << d1.getYear();
-
     */
+
+    /*
     Times::Time t1(24, 00, 00);
     t1.subSecs(1);
     std::cout << "hours: " << t1.getHour() << " mins: " << t1.getMin() << " sec: " << t1.getSec();
+    */
 
+    DateTime dt1(2024, 6, 1, 5, 53, 04);
+    DateTime dt2(2025, 1, 1, 24, 7, 31);
+    dt1.difference(dt1, dt2);
 
     return 0;
 }
