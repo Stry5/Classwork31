@@ -27,85 +27,102 @@ namespace Dates {
         int year;
         int month;
         int day;
-    public:
-        Date(int& year, int& month, int& day) {
-            setYear(year);
-            setMonth(month);
-            setDay(day);
+        bool isLeapYear;
+        void addDayLimit(const int& day, const int& limit) {
+            addMonth(1);
+            setDay(day - (limit - this->day));
         }
-
+        void subDayLimit(const int& day, const int& limit) {
+            subMonth(1);
+            setDay(limit - (day - this->day));
+        }
+        int daysInMonth(const int& month){
+            int days[] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+            if (month == 2 && (isLeapYear == true)) {
+                return 29;
+            }
+            return days[month - 1];
+        }
+        bool checkLeapYear(const int& year) {
+            return ((year % 4 == 0) || ((year % 400 == 0) && (year % 100 == 0)));
+        }
+    public:
         Date(int year, int month, int day) {
-            setYear(year);
-            setMonth(month);
-            setDay(day);
+            if (year < 0) {
+                throw std::invalid_argument("!! year cannot be negative");
+            }
+            else {
+                setYear(year);
+            }
+            if (month < 0 || month > 12) {
+                throw std::invalid_argument("!! invalid month !!");
+            }
+            else {
+                setMonth(month);
+            }
+            if (day < 0 || month > 31) {
+                throw std::invalid_argument("!! invalid day !!");
+            }
+            else {
+                setDay(day);
+            }
+            isLeapYear = checkLeapYear(year);
         }
 
         // pass by value b/c allows for both passing a variable or a value itself
 
         void addYear(const int& year) {
             this->year += year;
+            isLeapYear = checkLeapYear(year);
+
         }
         void subYear(const int& year) {
             if (this->year > 0) {
                 this->year -= year;
+                isLeapYear = checkLeapYear(year);
             }
             else {
                 throw std::invalid_argument("!! Year cannot be negative !! ");
             }
         }
 
-        void addMonth(const int &month){
-            if (this->month + month > 12) {
+        void addMonth(int month){
+            while (this->month + month > 12){
                 addYear(1);
-                setMonth(month - (12 - this->month));
+                month -= 12;
             }
-            else {
-                setMonth(this->month + month);
-            }
+            setMonth(this->month + month);
+
         }
         void subMonth(int month){
-            if (this->month - month < 1) {
+            while (this->month - month < 1) {
                 subYear(1);
-                setMonth(month - (12 - this->month));
-            }else {
-                setMonth(this->month + month);
+                month -= 12;
             }
+            setMonth(this->month - month);
         }
 
-        void addDay(int day) {
-            switch (this->month) {
-            case 1:
-                if (this->day + day > 31) {
-                    
-                }
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            case 7:
-                break;
-            case 8:
-                break;
-            case 9:
-                break;
-            case 10:
-                break;
-            case 11:
-                break;
-            case 12:
-                break;
-            default:
-                throw std::invalid_argument("!! invalid year !!");
-                break;
+        void addDays(int days) {
+            while((this->day+days) > daysInMonth(this->month)){
+                std::cout << days << std::endl;
+                days -= daysInMonth(this->month);
+                addMonth(1);
             }
+            setDay(this->day+days);
         };
+        void subDays(int days) {
+            while (days > daysInMonth(this->day)) {
+                days -= daysInMonth(this->month);
+
+                std::cout << "this->day: " << this->day << std::endl;
+                std::cout << "days: "<< days << std::endl;
+                std::cout << "days in month: " << daysInMonth(this->month) << std::endl << std::endl;
+                subMonth(1);
+
+            }
+            setDay(this->day - days);
+        };
+
 
         // getters & setters
         int getYear() {
@@ -138,11 +155,21 @@ namespace Times {
         int min;
         int sec;
     public:
-        Time(int& hour, int& month, int& day) {
+
+        // getters and setters
+        Time(int hour, int min, int sec) {
+
+        }
+        void setHour(int& hour) {
             this->hour = hour;
+        }
+        void setMin(int& min) {
             this->min = min;
+        }
+        void setSec(int& sec) {
             this->sec = sec;
         }
+
         int getHour() {
             return hour;
         }
@@ -169,7 +196,9 @@ public:
 
 int main()
 {
-    Dates::Date d1(2024,12,12);
-    d1.addMonth(3);
-    std::cout << d1.getMonth();
+    Dates::Date d1(2024,1,1);
+    d1.subDays(9999);
+    std::cout  << "month: " << d1.getMonth() << " day: " << d1.getDay() << " year: " << d1.getYear();
+
+    return 0;
 }
