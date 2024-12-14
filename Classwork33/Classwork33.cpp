@@ -291,6 +291,7 @@ public:
         // account for days not counted in the start month and end month
         numDays -= startDate.getDay();
         numDays += endDate.getDay();
+
         numHours = startDate.getHour() - endDate.getHour();
         numMins = startDate.getMin() - endDate.getMin();
         numSecs = startDate.getSec() - endDate.getSec();
@@ -306,6 +307,8 @@ public:
         std::cout << "the difference is " << numDays << " days, " << numHours << " hours, " 
         << numMins << " minutes, and " << numSecs << " seconds.";
     }
+
+    void format(std::string formatString){}
 };
 
 
